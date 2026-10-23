@@ -6,7 +6,7 @@ AI chat workspace with Swift, Code, Research, Studio and Think modes, Firebase e
 
 The repository contains the complete application source. The existing application runs on Sites / Cloudflare Workers with a protected D1 database. Vercel hosts a Node.js streaming gateway to that application. **The Sites backend remains required.** This preserves existing accounts, saved chats, encrypted provider credentials, API keys and admin settings without a database migration or Firebase service-account upload.
 
-Vercel routes all paths to `api/gateway.mjs`. The gateway forwards cookies, streams AI responses, translates same-origin requests and redirects, strips platform identity headers, and signs visitor IPs for independent backend rate limits. It does not contain or expose the provider API key. All responses are private and uncached.
+The build emits a Build Output API v3 function at `.vercel/output/functions/gateway.func` and an explicit catch-all route in `.vercel/output/config.json`. Vercel routes all paths to the packaged `api/gateway.mjs` handler. The gateway forwards cookies, streams AI responses, translates same-origin requests and redirects, strips platform identity headers, and signs visitor IPs for independent backend rate limits. It does not contain or expose the provider API key. All responses are private and uncached.
 
 ## Vercel setup
 
@@ -22,6 +22,6 @@ Required backend secrets: `GROQ_API_KEY`, `HARIUM_ENCRYPTION_KEY`, `ADMIN_ACCESS
 
 ## Verification
 
-`node --experimental-strip-types --test tests/*.test.mjs` runs application and gateway tests. `node scripts/build-vercel.mjs` verifies gateway packaging.
+`node --experimental-strip-types --test tests/*.test.mjs` runs application and gateway tests. `node scripts/build-vercel.mjs` generates the function and routing artifacts. The build test checks that home, login, admin, API and asset paths all resolve to the function.
 
 The public AI endpoint is `POST /admin/api` with a project API key issued in `/admin`. Provider credentials and the admin access key belong in secret storage, never browser code.
