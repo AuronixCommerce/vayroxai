@@ -1,0 +1,1 @@
+ALTER TABLE `guest_allowances` ADD `resets_at` integer DEFAULT 0 NOT NULL;

@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "echo 'Gateway uses Node.js built-ins'",
+  "buildCommand": "node scripts/build-vercel.mjs",
+  "outputDirectory": "vercel-public",
+  "functions": {"api/gateway.mjs": {"maxDuration": 300}},
+  "rewrites": [{"source": "/:path*", "destination": "/api/gateway?__vayrox_path=:path*"}]
+}

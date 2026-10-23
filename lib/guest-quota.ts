@@ -1,0 +1,8 @@
+import { env } from "cloudflare:workers";
+import { runtime } from "./provider";
+import { hashKey } from "./admin-security";
+import { GUEST_MESSAGE_LIMIT,issueGuestToken,verifyGuestToken,reserveGuestSQL,reserveGuestArguments,releaseGuestSQL } from "./guest-policy";
+export async function guestAccess(req:Request){const secret=runtime().HARIUM_ENCRYPTION_KEY||"";const existing=req.headers.get("cookie")?.split(";").map(s=>s.trim()).find(s=>s.startsWith("vayrox_guest="))?.slice(13);const token=existing&&await verifyGuestToken(existing,secret)?existing:await issueGuestToken(secret);const id=await hashKey("guest-quota:"+token.split(".")[0]+secret);return {id,cookie:token!==existing?`vayrox_guest=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=31536000`:undefined};}
+export async function guestAllowance(id:string){if(!env.DB)throw Error("Database unavailable");const row=await env.DB.prepare("SELECT used,resets_at FROM guest_allowances WHERE id=?").bind(id).first<{used:number;resets_at:number}>();return row&&row.resets_at>Date.now()?{remaining:Math.max(0,GUEST_MESSAGE_LIMIT-row.used),resetsAt:row.resets_at}:{remaining:GUEST_MESSAGE_LIMIT,resetsAt:null};}
+export async function reserveGuestMessage(id:string){if(!env.DB)throw Error("Database unavailable");const row=await env.DB.prepare(reserveGuestSQL).bind(...reserveGuestArguments(id,Date.now())).first<{used:number;resets_at:number}>();return row?{allowed:true,remaining:GUEST_MESSAGE_LIMIT-row.used,resetsAt:row.resets_at}:{allowed:false,...await guestAllowance(id)};}
+export async function releaseGuestMessage(id:string,resetsAt:number){if(!env.DB)throw Error("Database unavailable");await env.DB.prepare(releaseGuestSQL).bind(Date.now(),id,resetsAt).run();return guestAllowance(id);}

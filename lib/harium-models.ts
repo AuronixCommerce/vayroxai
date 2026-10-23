@@ -1,0 +1,12 @@
+export const hariumModels=[
+ {id:"swift",name:"Vayrox Swift",short:"Swift",category:"General",description:"Quick answers. Clear thinking. Everyday brilliance.",tag:"Everyday",headline:["Think beyond.","Create what’s next."],placeholder:"Ask anything. Let’s make it simple.",activity:"Finding the clearest answer",style:"Crisp, direct, conversational",color:"sage"},
+ {id:"code",name:"Vayrox Code",short:"Code",category:"Code",description:"A development partner from first line to final fix.",tag:"Build & debug",headline:["From the first line.","To what comes next."],placeholder:"Describe a feature, paste code, or untangle a bug…",activity:"Working through your code",style:"Structured, precise, implementation first",color:"violet"},
+ {id:"research",name:"Vayrox Research",short:"Research",category:"Analyze",description:"Explore the web. Connect the evidence. See further.",tag:"Web research",headline:["Beyond the surface.","Closer to the truth."],placeholder:"What would you like to investigate?",activity:"Researching your question",style:"Evidence, context, sources, and uncertainty",color:"blue"},
+ {id:"studio",name:"Vayrox Studio",short:"Studio",category:"Write",description:"Distinctive words for ideas that deserve a voice.",tag:"Write & create",headline:["Find your voice.","Make it unforgettable."],placeholder:"A story, an email, a brand idea. Start anywhere…",activity:"Shaping the words",style:"Expressive, natural, thoughtfully edited",color:"amber"},
+ {id:"think",name:"Vayrox Think",short:"Think",category:"Brainstorm",description:"Go deeper on decisions, problems, and possibilities.",tag:"Reason & plan",headline:["See the possibilities.","Find your direction."],placeholder:"Bring a complex question. Let’s work through it…",activity:"Considering the possibilities",style:"Methodical, balanced, practical",color:"teal"},
+] as const;
+export type HariumModelId=typeof hariumModels[number]["id"];
+export const hariumModelIds=["swift","code","research","studio","think"] as const;
+export function getHariumModel(id?:string){return hariumModels.find(m=>m.id===id)||hariumModels[0];}
+export function modelForCategory(category:string):HariumModelId{if(category==="Analyze")return "think";return hariumModels.find(m=>m.category===category)?.id||"swift";}
+export function revealBatch(id:string,reducedMotion=false){if(reducedMotion)return 10000;return id==="code"?160:id==="studio"?16:id==="research"?90:id==="think"?55:100;}

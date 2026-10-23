@@ -1,0 +1,8 @@
+const encoder=new TextEncoder();
+export async function hashKey(value:string){return Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",encoder.encode(value)))).map(n=>n.toString(16).padStart(2,"0")).join("");}
+export function equalText(a:string,b:string){let diff=a.length^b.length;for(let i=0;i<Math.max(a.length,b.length);i++)diff|=(a.charCodeAt(i)||0)^(b.charCodeAt(i)||0);return diff===0;}
+async function signer(secret:string){return crypto.subtle.importKey("raw",encoder.encode(secret),{name:"HMAC",hash:"SHA-256"},false,["sign"]);}
+export async function createSession(secret:string,now=Date.now()){const payload=`${now+12*60*60*1000}.${crypto.randomUUID()}`;const sig=await crypto.subtle.sign("HMAC",await signer(secret),encoder.encode(payload));return payload+"."+Array.from(new Uint8Array(sig)).map(n=>n.toString(16).padStart(2,"0")).join("");}
+export async function validSession(token:string,secret:string,now=Date.now()){if(!/^\d{13}\.[\da-f-]{36}\.[\da-f]{64}$/.test(token))return false;const [expires,nonce,sig]=token.split(".");if(Number(expires)<=now||Number(expires)>now+12*60*60*1000)return false;const expected=await crypto.subtle.sign("HMAC",await signer(secret),encoder.encode(`${expires}.${nonce}`));return equalText(sig,Array.from(new Uint8Array(expected)).map(n=>n.toString(16).padStart(2,"0")).join(""));}
+export function newProjectKey(){const bytes=crypto.getRandomValues(new Uint8Array(32));return "cga_"+Array.from(bytes).map(n=>n.toString(16).padStart(2,"0")).join("");}
+export function allowedOrigin(origin:string|null,siteOrigin:string,origins:string[]){return !origin||origin===siteOrigin||origins.includes(origin);}
